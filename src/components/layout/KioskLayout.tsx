@@ -31,9 +31,9 @@ export const KioskLayout: React.FC<KioskLayoutProps> = ({
     document.documentElement.style.overflow = 'hidden';
 
     // Attempt to lock screen orientation to landscape
-    if (window.screen.orientation && window.screen.orientation.lock) {
+    if (window.screen.orientation && (window.screen.orientation as any).lock) {
       try {
-        window.screen.orientation.lock('landscape').catch(() => {
+        (window.screen.orientation as any).lock('landscape').catch(() => {
           console.warn('Screen orientation lock not supported on this device');
         });
       } catch (error) {
