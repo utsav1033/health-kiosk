@@ -322,9 +322,9 @@ export function createSkipLinks(targets: Array<{
  * @example
  * const { modalRef, handleOpen, handleClose } = useModalFocus(isOpen, onClose);
  * 
- * <div ref={modalRef}>
- *   {/* Modal content */}
- * </div>
+ * div ref={modalRef}
+ *   Modal content
+ * /div
  */
 export function useModalFocus(
   isOpen: boolean,
