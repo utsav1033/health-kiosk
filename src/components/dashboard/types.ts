@@ -8,6 +8,8 @@ import type { HealthMetric, HealthCategory } from '@/constants/healthCategories'
  * Type definitions for health metrics and dashboard data structures
  */
 
+export type { HealthStatus };
+
 export interface PatientInfo {
   name: string;
   id: string;
