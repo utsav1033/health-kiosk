@@ -23,7 +23,7 @@ export const CategoryCard: React.FC<CategoryCardProps> = ({
       onClick={onClick}
       className={`
         w-full rounded-3xl transition-all duration-300 flex flex-col justify-between items-center text-center
-        p-8 active:scale-95 overflow-hidden
+        p-10 active:scale-95 overflow-hidden
         ${
           isFeatured
             ? 'bg-slate-900 text-white hover:bg-slate-800'
@@ -32,28 +32,84 @@ export const CategoryCard: React.FC<CategoryCardProps> = ({
               : 'bg-white'
         }
       `}
-      style={{ fontFamily: 'Montserrat, sans-serif', borderColor: '#1E3A8A', borderWidth: '3px', borderStyle: 'solid', height: '450px' }}
+      style={{ 
+        fontFamily: 'Montserrat, sans-serif', 
+        borderColor: isFeatured ? '#059669' : '#1E3A8A',
+        borderStyle: 'solid',
+        borderWidth: isFeatured ? '0px' : '3px',
+        borderRadius: '24px',
+        minHeight: '420px',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        textAlign: 'center',
+        position: 'relative',
+      }}
     >
+      {/* Left Border Accent for Featured */}
+      {isFeatured && (
+        <div
+          style={{
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            bottom: 0,
+            width: '8px',
+            backgroundColor: '#3CCB7F',
+            borderRadius: '24px 0 0 24px',
+          }}
+        />
+      )}
+
+      {/* Recommended Badge */}
+      {isFeatured && (
+        <div 
+          className="mb-2 px-4 py-1 rounded-full text-xs font-bold uppercase tracking-wider text-white"
+          style={{ backgroundColor: '#3CCB7F' }}
+        >
+          Recommended
+        </div>
+      )}
+
       {/* Icon */}
-      <div className="mb-6">
+      <div className="mb-4">
         <span 
-          className="material-symbols-outlined text-8xl"
-          style={{ color: isFeatured ? '#1E3A8A' : '#1E3A8A', fontWeight: 300 }}
+          className="material-symbols-outlined"
+          style={{ 
+            color: isFeatured ? '#3CCB7F' : '#1E3A8A', 
+            fontWeight: 300,
+            fontSize: '64px'
+          }}
         >
           {icon || category.icon}
         </span>
       </div>
 
       {/* Title */}
-      <h3 className="font-bold mb-4" style={{ color: isFeatured ? 'white' : '#111827', fontFamily: 'Playfair Display, serif', fontSize: '32px' }}>
+      <h3 
+        className="font-bold mb-4"
+        style={{ 
+          color: isFeatured ? 'white' : '#111827', 
+          fontFamily: 'Playfair Display, serif',
+          fontSize: '28px'
+        }}
+      >
         {category.title}
       </h3>
 
       {/* Description */}
-      <div className={`space-y-3 mb-6 w-full max-w-xs mx-auto text-left ${isFeatured ? 'text-slate-300' : 'text-slate-600'}`} style={{ fontSize: '18px', fontFamily: 'Montserrat, sans-serif' }}>
+      <div 
+        className={`space-y-2 mb-6 w-full max-w-xs mx-auto text-left flex-1 ${isFeatured ? 'text-slate-200' : 'text-slate-600'}`} 
+        style={{ fontSize: '14px', fontFamily: 'Montserrat, sans-serif' }}
+      >
         {category.description.split(', ').map((point, idx) => (
-          <p key={idx}>
-            • {point.trim()}
+          <p key={idx} className="flex items-start gap-2">
+            <span 
+              className="w-2 h-2 rounded-full flex-shrink-0 mt-1"
+              style={{ backgroundColor: isFeatured ? '#3CCB7F' : '#1E3A8A' }}
+            ></span>
+            <span>{point.trim()}</span>
           </p>
         ))}
       </div>
@@ -62,22 +118,35 @@ export const CategoryCard: React.FC<CategoryCardProps> = ({
       <button
         onClick={onClick}
         className={`
-          w-full py-5 px-8 rounded-2xl font-bold uppercase tracking-widest transition-all
+          w-full py-4 px-6 rounded-xl font-bold uppercase tracking-widest transition-all
           ${
             isFeatured
-              ? 'bg-white text-slate-900 hover:bg-slate-100'
-              : 'text-slate-500 hover:bg-slate-50'
+              ? 'text-white shadow-lg hover:shadow-xl hover:brightness-105'
+              : 'text-white border-0 hover:shadow-md'
           }
         `}
         style={{ 
           fontFamily: 'Montserrat, sans-serif',
-          fontSize: '16px',
+          fontSize: '15px',
           fontWeight: 700,
-          borderColor: '#1E3A8A',
-          borderWidth: '3px'
+          backgroundColor: isFeatured ? '#3CCB7F' : '#1E3A8A',
+          color: 'white',
+          cursor: 'pointer',
+          boxShadow: isFeatured ? '0 4px 12px rgba(60, 203, 127, 0.3)' : '0 2px 8px rgba(30, 58, 138, 0.2)',
+          transition: 'all 0.3s ease',
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.boxShadow = isFeatured 
+            ? '0 6px 16px rgba(60, 203, 127, 0.4)' 
+            : '0 4px 12px rgba(30, 58, 138, 0.3)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.boxShadow = isFeatured 
+            ? '0 4px 12px rgba(60, 203, 127, 0.3)' 
+            : '0 2px 8px rgba(30, 58, 138, 0.2)';
         }}
       >
-        {isFeatured ? 'Start Full Scan' : 'Select'}
+        {isFeatured ? 'START ASSESSMENT' : `SELECT`}
       </button>
     </button>
   );

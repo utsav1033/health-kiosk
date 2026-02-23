@@ -86,13 +86,9 @@ export default function CheckupsPage() {
             </div>
           </header>
 
-          {/* Light Background Section */}
-          <div 
-            className="p-6 md:p-8 rounded-lg md:rounded-xl mb-8 flex-shrink-0"
-            style={{ backgroundColor: '#F0F9FF', border: '1px solid #E0F2FE' }}
-          >
-            {/* Grid of Categories - Responsive */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-3 md:gap-4 lg:gap-6">
+          {/* Modern Grid Layout - 2 Columns */}
+          <div className="mb-8 flex-shrink-0">
+            <div className="grid grid-cols-2 gap-6 max-w-4xl">
               {CHECKUP_CATEGORIES.map((category) => (
                 <CategoryCard
                   key={category.id}
