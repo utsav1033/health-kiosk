@@ -19,8 +19,11 @@ export const CategoryCard: React.FC<CategoryCardProps> = ({
   const isFeatured = category.id === 'full-body';
 
   return (
-    <button
+    <div
+      role="button"
+      tabIndex={0}
       onClick={onClick}
+      onKeyPress={(e) => { if (e.key === 'Enter' || e.key === ' ') onClick(); }}
       className={`
         w-full rounded-3xl transition-all duration-300 flex flex-col justify-between items-center text-center
         p-10 active:scale-95 overflow-hidden
@@ -45,6 +48,7 @@ export const CategoryCard: React.FC<CategoryCardProps> = ({
         alignItems: 'center',
         textAlign: 'center',
         position: 'relative',
+        cursor: 'pointer',
       }}
     >
       {/* Left Border Accent for Featured */}
@@ -115,8 +119,7 @@ export const CategoryCard: React.FC<CategoryCardProps> = ({
       </div>
 
       {/* Select Button */}
-      <button
-        onClick={onClick}
+      <div
         className={`
           w-full py-4 px-6 rounded-xl font-bold uppercase tracking-widest transition-all
           ${
@@ -147,8 +150,8 @@ export const CategoryCard: React.FC<CategoryCardProps> = ({
         }}
       >
         {isFeatured ? 'START ASSESSMENT' : `SELECT`}
-      </button>
-    </button>
+      </div>
+    </div>
   );
 };
 

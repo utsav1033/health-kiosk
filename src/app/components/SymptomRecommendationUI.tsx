@@ -1,32 +1,61 @@
-/**
- * Example Component: SymptomRecommendationUI
- * 
- * This is a complete, ready-to-use React component that demonstrates
- * how to integrate the YoloHealth recommendation system into your UI.
- * 
- * Usage:
- * 1. Place this file in: src/app/components/SymptomRecommendationUI.tsx
- * 2. Import in your page: import { SymptomRecommendationUI } from '@/app/components/SymptomRecommendationUI'
- * 3. Add to your JSX: <SymptomRecommendationUI />
- */
-
 'use client';
 
 import { useState } from 'react';
-import { useYoloHealthRecommendations, MatchedTest, RecommendationResponse } from '@/lib/hooks/useYoloHealthRecommendations';
+
+interface MatchedTest {
+  name: string;
+  description?: string;
+  parameters: string[];
+  timeToResults: string;
+  category: string;
+}
+
+interface RecommendationResponse {
+  matchedTests: MatchedTest[];
+  recommendations: string;
+  nextSteps: string;
+}
 
 export function SymptomRecommendationUI() {
   const [symptoms, setSymptoms] = useState('');
-  const { loading, error, data, getRecommendations, reset } = useYoloHealthRecommendations();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [data, setData] = useState<RecommendationResponse | null>(null);
+
+  const medicalBlue = '#174EA6';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await getRecommendations(symptoms);
+    if (!symptoms.trim()) return;
+
+    setLoading(true);
+    setError('');
+    setData(null);
+
+    try {
+      const response = await fetch('/api/yolo-health/recommend', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ symptoms }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to get recommendations');
+      }
+
+      const result = await response.json();
+      setData(result);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleReset = () => {
     setSymptoms('');
-    reset();
+    setData(null);
+    setError('');
   };
 
   const commonSymptoms = [
@@ -62,7 +91,8 @@ export function SymptomRecommendationUI() {
                 value={symptoms}
                 onChange={(e) => setSymptoms(e.target.value)}
                 placeholder="e.g., chest pain, shortness of breath, dizziness..."
-                className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:border-transparent resize-none"
+                style={{ '--medical-blue': medicalBlue } as React.CSSProperties}
                 rows={4}
                 disabled={loading}
               />
@@ -94,7 +124,16 @@ export function SymptomRecommendationUI() {
               <button
                 type="submit"
                 disabled={loading || !symptoms.trim()}
-                className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white font-semibold py-3 rounded-lg transition-colors"
+                className="flex-1 text-white font-semibold py-3 rounded-lg transition-colors disabled:bg-slate-300"
+                style={{ backgroundColor: medicalBlue }}
+                onMouseEnter={(e) => {
+                  if (!loading && symptoms.trim()) {
+                    e.currentTarget.style.backgroundColor = '#0d47a1';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = medicalBlue;
+                }}
               >
                 {loading ? (
                   <span className="flex items-center justify-center gap-2">
@@ -134,7 +173,7 @@ export function SymptomRecommendationUI() {
             {/* Matched Tests */}
             <ResultSection
               title={`Matched Tests (${data.matchedTests.length})`}
-              icon="🔬"
+              icon={<MedicalTestIcon color={medicalBlue} />}
               bgColor="bg-blue-50"
               borderColor="border-blue-200"
             >
@@ -143,7 +182,7 @@ export function SymptomRecommendationUI() {
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {data.matchedTests.map((test: MatchedTest) => (
-                    <TestCard key={test.name} test={test} />
+                    <TestCard key={test.name} test={test} medicalBlue={medicalBlue} />
                   ))}
                 </div>
               )}
@@ -151,10 +190,10 @@ export function SymptomRecommendationUI() {
 
             {/* Recommendations */}
             <ResultSection
-              title="AI Recommendations"
-              icon="💡"
-              bgColor="bg-green-50"
-              borderColor="border-green-200"
+              title="Recommendations"
+              icon={<RecommendationIcon color={medicalBlue} />}
+              bgColor="bg-blue-50"
+              borderColor="border-blue-200"
             >
               <div className="prose prose-sm max-w-none">
                 <p className="whitespace-pre-wrap text-slate-700 leading-relaxed">
@@ -166,7 +205,7 @@ export function SymptomRecommendationUI() {
             {/* Next Steps */}
             <ResultSection
               title="Next Steps"
-              icon="→"
+              icon={<NextStepsIcon color={medicalBlue} />}
               bgColor="bg-purple-50"
               borderColor="border-purple-200"
             >
@@ -179,8 +218,8 @@ export function SymptomRecommendationUI() {
 
             {/* Footer Info */}
             <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 text-center text-sm text-slate-600">
-              <p>
-                💬 <strong>Note:</strong> These recommendations are for informational purposes only.
+              <p className="flex items-center justify-center gap-2">
+                <InfoIcon color={medicalBlue} /> <strong>Note:</strong> These recommendations are for informational purposes only.
                 Always consult with a healthcare professional for medical advice.
               </p>
             </div>
@@ -190,7 +229,9 @@ export function SymptomRecommendationUI() {
         {/* Empty State */}
         {!data && !loading && !error && (
           <div className="text-center py-12">
-            <div className="text-6xl mb-4">🏥</div>
+            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>
+              <MedicalTestIcon color={medicalBlue} />
+            </div>
             <p className="text-lg text-slate-600">
               Enter your symptoms above to get personalized health test recommendations
             </p>
@@ -206,7 +247,7 @@ export function SymptomRecommendationUI() {
  */
 interface ResultSectionProps {
   title: string;
-  icon: string;
+  icon: React.ReactNode;
   bgColor: string;
   borderColor: string;
   children: React.ReactNode;
@@ -235,29 +276,32 @@ function ResultSection({
  */
 interface TestCardProps {
   test: MatchedTest;
+  medicalBlue: string;
 }
 
-function TestCard({ test }: TestCardProps) {
+function TestCard({ test, medicalBlue }: TestCardProps) {
   const [expanded, setExpanded] = useState(false);
 
-  const categoryIcons: { [key: string]: string } = {
-    cardiovascular: '❤️',
-    metabolic: '⚗️',
-    blood: '🩸',
-    'vital signs': '📊',
-    endocrine: '⚡',
-    renal: '🫘',
-    hepatic: '🧬',
-    immune: '🛡️',
+  const categoryIcons: { [key: string]: React.ReactNode } = {
+    cardiovascular: <HeartIcon color={medicalBlue} />,
+    metabolic: <LabIcon color={medicalBlue} />,
+    blood: <BloodIcon color={medicalBlue} />,
+    'vital signs': <VitalsIcon color={medicalBlue} />,
+    endocrine: <EndocrineIcon color={medicalBlue} />,
+    renal: <RenalIcon color={medicalBlue} />,
+    hepatic: <HepaticIcon color={medicalBlue} />,
+    immune: <ImmuneIcon color={medicalBlue} />,
   };
-
-  const icon = categoryIcons[test.category] || '🔬';
+  const icon = categoryIcons[test.category] || <MedicalTestIcon color={medicalBlue} />;
 
   return (
-    <div className="bg-white border border-slate-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+    <div 
+      className="bg-white border rounded-lg p-4 hover:shadow-md transition-shadow"
+      style={{ borderColor: medicalBlue }}
+    >
       <button
         onClick={() => setExpanded(!expanded)}
-        className="w-full text-left font-semibold text-slate-900 hover:text-blue-600 transition-colors flex items-center justify-between"
+        className="w-full text-left font-semibold text-slate-900 hover:opacity-70 transition-opacity flex items-center justify-between"
       >
         <div className="flex items-center gap-2">
           <span className="text-xl">{icon}</span>
@@ -267,10 +311,13 @@ function TestCard({ test }: TestCardProps) {
       </button>
 
       <div className="mt-2 flex items-center gap-4 text-sm">
-        <span className="inline-block bg-slate-100 px-2 py-1 rounded text-slate-700 capitalize">
+        <span 
+          className="inline-block px-2 py-1 rounded capitalize text-white"
+          style={{ backgroundColor: medicalBlue }}
+        >
           {test.category}
         </span>
-        <span className="text-slate-600">⏱️ {test.timeToResults}</span>
+        <span style={{ color: medicalBlue }}>{test.timeToResults}</span>
       </div>
 
       {expanded && (
@@ -279,7 +326,7 @@ function TestCard({ test }: TestCardProps) {
           <ul className="text-sm text-slate-600 space-y-1">
             {test.parameters.map((param) => (
               <li key={param} className="flex items-center gap-2">
-                <span className="text-blue-500">•</span>
+                <span style={{ color: medicalBlue }}>•</span>
                 {param}
               </li>
             ))}
@@ -287,5 +334,114 @@ function TestCard({ test }: TestCardProps) {
         </div>
       )}
     </div>
+  );
+}
+
+// ============ ICON COMPONENTS ============
+
+function MedicalTestIcon({ color }: { color: string }) {
+  return (
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="4" y="4" width="16" height="16" rx="4" stroke={color} strokeWidth="2" fill="none" />
+      <path d="M8 8h8v8H8z" stroke={color} strokeWidth="2" fill="none" />
+    </svg>
+  );
+}
+
+function RecommendationIcon({ color }: { color: string }) {
+  return (
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="12" cy="12" r="10" stroke={color} strokeWidth="2" fill="none" />
+      <path d="M12 7v5l3 3" stroke={color} strokeWidth="2" fill="none" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function NextStepsIcon({ color }: { color: string }) {
+  return (
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M5 12h14" stroke={color} strokeWidth="2" strokeLinecap="round" />
+      <path d="M13 7l6 5-6 5" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function InfoIcon({ color }: { color: string }) {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="12" cy="12" r="10" stroke={color} strokeWidth="2" fill="none" />
+      <path d="M12 16v-4" stroke={color} strokeWidth="2" strokeLinecap="round" />
+      <circle cx="12" cy="8" r="1" fill={color} />
+    </svg>
+  );
+}
+
+// Category Icons
+function HeartIcon({ color }: { color: string }) {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 21C12 21 4 13.5 4 8.5C4 5.5 6.5 3 9.5 3C11.5 3 12 5 12 5C12 5 12.5 3 14.5 3C17.5 3 20 5.5 20 8.5C20 13.5 12 21 12 21Z" stroke={color} strokeWidth="2" fill="none" />
+    </svg>
+  );
+}
+
+function LabIcon({ color }: { color: string }) {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="6" y="6" width="12" height="12" rx="3" stroke={color} strokeWidth="2" fill="none" />
+      <path d="M12 6v12" stroke={color} strokeWidth="2" />
+    </svg>
+  );
+}
+
+function BloodIcon({ color }: { color: string }) {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="12" cy="12" rx="7" ry="10" stroke={color} strokeWidth="2" fill="none" />
+    </svg>
+  );
+}
+
+function VitalsIcon({ color }: { color: string }) {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="4" y="4" width="16" height="16" rx="4" stroke={color} strokeWidth="2" fill="none" />
+      <path d="M8 12h2l2-4 2 8h2" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function EndocrineIcon({ color }: { color: string }) {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="12" cy="12" r="8" stroke={color} strokeWidth="2" fill="none" />
+      <path d="M12 8v8" stroke={color} strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function RenalIcon({ color }: { color: string }) {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="8" cy="12" rx="4" ry="8" stroke={color} strokeWidth="2" fill="none" />
+      <ellipse cx="16" cy="12" rx="4" ry="8" stroke={color} strokeWidth="2" fill="none" />
+    </svg>
+  );
+}
+
+function HepaticIcon({ color }: { color: string }) {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="6" y="8" width="12" height="8" rx="4" stroke={color} strokeWidth="2" fill="none" />
+    </svg>
+  );
+}
+
+function ImmuneIcon({ color }: { color: string }) {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 2v20" stroke={color} strokeWidth="2" strokeLinecap="round" />
+      <circle cx="12" cy="12" r="8" stroke={color} strokeWidth="2" fill="none" />
+    </svg>
   );
 }
