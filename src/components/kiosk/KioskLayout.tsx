@@ -33,9 +33,9 @@ export const KioskLayout: React.FC<KioskLayoutProps> = ({
   const navItems = useMemo(() => [
     { label: 'Home', icon: 'home', path: '/', onClick: onHomeClick },
     { label: 'Checkups', icon: 'local_hospital', path: '/checkups', onClick: onCheckupsClick },
+    { label: 'Symptom Checker', icon: 'stethoscope', path: '/chatbot', onClick: onChatbotClick },
     { label: 'Profile', icon: 'person', path: '/profile', onClick: onProfileClick },
     { label: 'Govt Schemes', icon: 'description', path: '/schemes', onClick: onSchemesClick },
-    { label: 'Chatbot', icon: 'chat', path: '/chatbot', onClick: onChatbotClick },
   ], [onHomeClick, onProfileClick, onCheckupsClick, onSchemesClick, onChatbotClick]);
 
   return (

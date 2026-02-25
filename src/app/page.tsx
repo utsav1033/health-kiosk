@@ -19,6 +19,10 @@ export default function Home() {
     await navigateToPage(router, ROUTES.PROFILE);
   };
 
+  const handleSymptomChecker = async () => {
+    await navigateToPage(router, ROUTES.CHATBOT);
+  };
+
   const handleHelp = () => {
     console.log('Help clicked');
   };
@@ -195,6 +199,24 @@ export default function Home() {
                 <span style={{ fontSize: '20pt', fontFamily: 'Montserrat, sans-serif' }} className="font-bold tracking-tight">Reports</span>
               </button>
             </div>
+          </div>
+
+          {/* Secondary Button Row - Symptom Checker */}
+          <div className="w-full max-w-6xl mt-8">
+            <button
+              onClick={handleSymptomChecker}
+              className="flex items-center justify-center gap-4 w-full py-4 px-8 rounded-2xl border-2 shadow-md hover:brightness-105 transition-all group active:scale-95"
+              style={{ 
+                backgroundColor: '#EEF2FF', 
+                borderColor: '#1E3A8A',
+                color: '#1E3A8A'
+              }}
+            >
+              <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
+                <span className="material-symbols-outlined text-xl">stethoscope</span>
+              </div>
+              <span style={{ fontSize: '18pt', fontFamily: 'Montserrat, sans-serif' }} className="font-bold tracking-tight">Symptom Checker - Get AI Health Recommendations</span>
+            </button>
           </div>
 
           {/* Info Section */}

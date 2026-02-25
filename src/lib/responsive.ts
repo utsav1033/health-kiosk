@@ -273,3 +273,7 @@ export const kioskSize = {
 
 
 
+
+
+
+
